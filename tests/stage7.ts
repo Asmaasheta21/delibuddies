@@ -1,0 +1,2 @@
+import { CakeDeliveryMission } from '../src/missions/CakeDeliveryMission';
+const m=new CakeDeliveryMission(); console.assert(m.timer===240); m.tick(2); console.assert(m.timer<240); m.complete(100); console.assert(m.status==='SUCCESS'&&m.result?.stars===3&&m.result.score>9000); m.reset(); for(let i=0;i<30000;i++)m.tick(1/60); console.assert(m.status==='FAILED'&&m.result?.reason==='TIME'); m.reset(); m.fail('CAKE'); console.assert(m.result?.stars===0); console.log('PASS Stage 7 mission, timer, score, stars, reset tests');

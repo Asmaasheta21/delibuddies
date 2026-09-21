@@ -1,0 +1,363 @@
+:root {
+  color-scheme: light;
+  --color-sky: #bfe6ff;
+  --color-cream: #fff6e8;
+  --color-pink: #ff8fb1;
+  --color-pink-dark: #e56c92;
+  --color-ink: #4a3b3b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  user-select: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--color-ink);
+  background: var(--color-sky);
+}
+
+#scene-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  outline: none;
+  touch-action: none;
+}
+
+#ui-root {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#ui-root > * {
+  pointer-events: auto;
+}
+
+.overlay-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, var(--color-sky), var(--color-cream));
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+  opacity: 1;
+  visibility: visible;
+}
+
+.overlay-screen.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loading-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 32px 40px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.game-title {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--color-pink-dark);
+}
+
+.game-title span {
+  color: var(--color-ink);
+}
+
+.loading-label {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.75;
+}
+
+.loading-bar {
+  width: 220px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(74, 59, 59, 0.15);
+  overflow: hidden;
+}
+
+.loading-bar-fill {
+  height: 100%;
+  width: 40%;
+  border-radius: 999px;
+  background: var(--color-pink);
+  animation: loading-sweep 1.1s ease-in-out infinite;
+}
+
+@keyframes loading-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(340%);
+  }
+}
+
+/* Screens that should show the 3D city/character stage behind their UI chrome. */
+#main-menu-screen,
+#character-select-screen {
+  background: transparent;
+  flex-direction: column;
+}
+
+.menu-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 36px 48px;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.15);
+}
+
+.menu-subtitle {
+  margin: 0;
+  opacity: 0.7;
+  font-size: 1rem;
+}
+
+.btn {
+  border: none;
+  border-radius: 999px;
+  font-family: inherit;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.btn:active {
+  transform: scale(0.94);
+}
+
+.btn-primary {
+  padding: 16px 48px;
+  font-size: 1.15rem;
+  color: #fff;
+  background: linear-gradient(160deg, var(--color-pink), var(--color-pink-dark));
+  box-shadow: 0 8px 0 rgba(180, 90, 120, 0.45), 0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
+/* Character select */
+
+.select-screen {
+  justify-content: flex-start;
+  padding-block: 22px;
+  gap: 14px;
+}
+
+.select-title {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(1.2rem, 3.6vw, 2rem);
+  font-weight: 800;
+  color: var(--color-ink);
+  padding: 10px 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.select-zones {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  min-height: 0;
+}
+
+.select-zone {
+  flex: 1;
+  position: relative;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 16px;
+  margin: 0 6px;
+  border-radius: 24px;
+}
+
+.select-zone::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 24px;
+  border: 3px solid transparent;
+  background: transparent;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  pointer-events: none;
+}
+
+.select-zone.is-selected::before {
+  border-color: var(--color-pink-dark);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.select-zone:focus {
+  outline: none;
+}
+
+.select-zone:focus-visible {
+  outline: 3px solid var(--color-pink-dark);
+  outline-offset: -6px;
+}
+
+.select-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.select-zone.is-selected .select-chip {
+  background: #fff;
+  transform: scale(1.08) translateY(-4px);
+}
+
+.select-chip-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  opacity: 0.55;
+}
+
+.select-chip-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--color-pink-dark);
+}
+
+.select-play-btn {
+  align-self: center;
+  margin-bottom: 4px;
+}
+
+/* Gameplay HUD / mobile controls */
+
+#pause-screen { background: rgba(191, 230, 255, 0.35); }
+.pause-button { position: absolute; top: max(16px, env(safe-area-inset-top)); right: 16px; padding: 12px 18px; background: var(--color-cream); pointer-events: auto; }
+
+#gameplay-hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#gameplay-hud.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.mobile-control {
+  display: none;
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Only show touch controls on touch-primary devices — desktop mice never see them. */
+@media (pointer: coarse), (max-width: 600px) {
+  .mobile-control {
+    display: flex;
+  }
+}
+
+.mobile-joystick-base {
+  left: max(20px, env(safe-area-inset-left));
+  bottom: max(24px, env(safe-area-inset-bottom));
+  width: 112px;
+  height: 112px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  border: 3px solid rgba(255, 255, 255, 0.55);
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-joystick-thumb {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 50px;
+  height: 50px;
+  border-radius: 999px;
+  background: rgba(255, 143, 177, 0.85);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+  transform: translate(-50%, -50%);
+  transition: transform 0.12s ease-out;
+  pointer-events: none;
+}
+
+.mobile-round-button {
+  right: max(24px, env(safe-area-inset-right));
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  border: 3px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.4);
+  color: var(--color-ink);
+  font-weight: 800;
+  font-size: 0.85rem;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+#mobile-run-button {
+  bottom: max(112px, calc(env(safe-area-inset-bottom) + 112px));
+}
+
+.mobile-jump-button {
+  bottom: max(24px, env(safe-area-inset-bottom));
+  background: rgba(255, 143, 177, 0.55);
+}
+.interaction-prompt,.cake-condition { position:absolute; left:50%; transform:translateX(-50%); top:18%; padding:10px 18px; border-radius:999px; background:rgba(255,255,255,.9); font-weight:800; box-shadow:0 5px 16px rgba(0,0,0,.15); }
+.cake-condition { left:auto; right:18px; transform:none; top:18px; color:var(--color-pink-dark); }
+.mobile-interact-button { bottom: max(196px, calc(env(safe-area-inset-bottom) + 196px)); background:rgba(255,246,232,.85); }
+.is-hidden { visibility:hidden; opacity:0; pointer-events:none; }
+
+.mobile-round-button.is-active {
+  background: rgba(255, 143, 177, 0.85);
+  color: #fff;
+}
+.mission-objective,.mission-timer{position:absolute;top:18px;padding:10px 14px;border-radius:16px;background:rgba(255,249,239,.9);box-shadow:0 4px 14px rgba(70,45,55,.15);font-weight:800;white-space:pre-line;z-index:5}.mission-objective{left:16px}.mission-timer{left:50%;transform:translateX(-50%)}
+#result-screen .menu-card{max-width:360px;text-align:center}#result-screen .btn{margin:6px}.cake-condition{transition:color .2s,transform .2s}.cake-condition:has(+ *){}
+@media (max-width:600px){.mission-objective,.mission-timer{top:8px;font-size:11px;padding:7px 9px}.mission-objective{left:8px}.mission-timer{left:auto;right:8px;transform:none}.pause-button{top:58px!important}}

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import * as THREE from 'three';
+import { DeliveryZone } from '../src/delivery/DeliveryZone';
+import { CakePackage } from '../src/delivery/CakePackage';
+import { TrafficSystem } from '../src/traffic/TrafficSystem';
+import { NPCSystem } from '../src/npc/NPCSystem';
+const cake=new CakePackage('stage6',new THREE.Vector3()); const zone=new DeliveryZone(new THREE.Vector3(0,0,0));
+zone.update(new THREE.Vector3(0,0,0),cake); assert.equal(zone.deliveryReady,false); cake.state='CARRIED'; zone.update(new THREE.Vector3(0,0,0),cake); assert.equal(zone.deliveryReady,true); assert.equal(zone.interact(),true); assert.equal(zone.deliveryPrepared,true); zone.reset(); assert.equal(zone.deliveryPrepared,false);
+const traffic=new TrafficSystem(); const start=traffic.root.children[0]!.position.x; traffic.update(1,new THREE.Vector3(100,0,100),null,'p'); assert.notEqual(traffic.root.children[0]!.position.x,start); traffic.reset(); assert.equal(traffic.root.children[0]!.position.x,start);
+const npcs=new NPCSystem(); const npc=npcs.root.children[0]!.position.clone(); npcs.update(20,new THREE.Vector3(100,0,100),null); assert(Number.isFinite(npcs.root.children[0]!.position.x)); npcs.reset(); assert.deepEqual(npcs.root.children[0]!.position.toArray(),npc.toArray());
+console.log('PASS Stage 6 deterministic route/traffic/NPC/delivery tests');

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>DeliBuddies</title>
+  </head>
+  <body>
+    <canvas id="scene-canvas"></canvas>
+
+    <div id="ui-root">
+      <div id="loading-screen" class="overlay-screen">
+        <div class="loading-card">
+          <h1 class="game-title">Deli<span>Buddies</span></h1>
+          <p class="loading-label">Warming up the ovens&hellip;</p>
+          <div class="loading-bar">
+            <div class="loading-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="main-menu-screen" class="overlay-screen is-hidden">
+        <div class="menu-card">
+          <h1 class="game-title">Deli<span>Buddies</span></h1>
+          <p class="menu-subtitle">A cozy delivery adventure</p>
+          <button id="main-menu-play" class="btn btn-primary" type="button">PLAY</button><button id="main-menu-settings" class="btn" type="button">SETTINGS</button>
+        </div>
+      </div>
+
+      <div id="character-select-screen" class="overlay-screen is-hidden select-screen">
+        <h1 class="select-title">Choose Your Delivery Buddy</h1>
+        <div class="select-zones">
+          <button class="select-zone" data-character-id="boy" type="button">
+            <span class="select-chip">
+              <span class="select-chip-label">BOY</span>
+              <span class="select-chip-name">Kip</span>
+            </span>
+          </button>
+          <button class="select-zone" data-character-id="girl" type="button">
+            <span class="select-chip">
+              <span class="select-chip-label">GIRL</span>
+              <span class="select-chip-name">Poppy</span>
+            </span>
+          </button>
+        </div>
+        <button id="select-play" class="btn btn-primary select-play-btn" type="button">PLAY</button>
+      </div>
+
+      <div id="gameplay-hud" class="is-hidden">
+        <div id="mission-objective" class="mission-objective">DELIVERY 01<br>PICK UP THE CAKE</div>
+        <div id="mission-timer" class="mission-timer">TIME 04:00</div>
+        <button id="pause-button" class="btn pause-button" type="button">PAUSE</button>
+        <div id="cake-condition" class="cake-condition is-hidden">CAKE 100%</div>
+        <div id="interaction-prompt" class="interaction-prompt is-hidden">[E] PICK UP</div>
+        <div id="mobile-joystick-base" class="mobile-control mobile-joystick-base">
+          <div id="mobile-joystick-thumb" class="mobile-joystick-thumb"></div>
+        </div>
+        <button id="mobile-run-button" class="mobile-control mobile-round-button" type="button">RUN</button>
+        <button id="mobile-jump-button" class="mobile-control mobile-round-button mobile-jump-button" type="button">JUMP</button>
+        <button id="mobile-interact-button" class="mobile-control mobile-round-button mobile-interact-button is-hidden" type="button">PICK UP</button>
+      </div>
+      <div id="result-screen" class="overlay-screen is-hidden"><div class="menu-card"><h1 id="result-title" class="select-title">DELIVERY COMPLETE!</h1><p id="result-reason"></p><p id="result-stats"></p><button id="try-again-button" class="btn btn-primary" type="button">TRY AGAIN</button><button id="result-menu-button" class="btn" type="button">MAIN MENU</button></div></div>
+      <div id="pause-screen" class="overlay-screen is-hidden">
+        <div class="menu-card">
+          <h1 class="select-title">Taking a breather</h1>
+          <button id="resume-button" class="btn btn-primary" type="button">RESUME</button><button id="restart-button" class="btn" type="button">RESTART</button><button id="pause-menu-button" class="btn" type="button">MAIN MENU</button>
+        </div>
+      </div>
+      <div id="settings-screen" class="overlay-screen is-hidden"><div class="menu-card"><h1 class="select-title">SETTINGS</h1><label><input id="music-toggle" type="checkbox" checked> MUSIC</label><label><input id="sfx-toggle" type="checkbox" checked> SFX</label><button id="settings-back" class="btn btn-primary" type="button">BACK</button></div></div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

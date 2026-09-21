@@ -1,0 +1,26 @@
+{
+  "name": "delibuddies",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test:stage4": "node tests/run-stage4.mjs",
+    "test:stage5": "node tests/run-stage5.mjs"
+    ,"test:stage6": "node tests/run-stage6.mjs"
+    ,"test:stage7": "node tests/run-stage7.mjs"
+    ,"test:stage8": "node tests/run-stage8.mjs"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.14.0",
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.169.0",
+    "esbuild": "^0.25.12",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.3"
+  }
+}
