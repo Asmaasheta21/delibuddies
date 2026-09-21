@@ -21,6 +21,7 @@ import { CakeDeliveryMission } from '../missions/CakeDeliveryMission';
 import { routeAt } from '../routes/RouteTypes';
 import type { RouteId } from '../routes/RouteTypes';
 import { objectiveTargetForPackage } from '../navigation/ObjectiveTarget';
+import { WorldEventManager } from '../events/WorldEventManager';
 
 const BASE_FOV_DEGREES = 50;
 
@@ -61,6 +62,7 @@ export class Game {
   private lastCakeCondition=100;
   private mapOpen=false;
   private navigationUpdate:((dt:number,player:THREE.Object3D,target:THREE.Vector3,route:RouteId|'unknown',objective:'PICKUP'|'DESTINATION')=>void)|null=null;
+  private readonly worldEvents=new WorldEventManager();private runIndex=0;
 
   constructor(canvas: HTMLCanvasElement, physicsWorld: PhysicsWorld) {
     this.canvas = canvas;
@@ -94,7 +96,7 @@ export class Game {
     this.scene.add(this.city.root);
     const cakePosition = this.city.landmarks.bakeryPickupAnchor.position.clone(); cakePosition.x += 1.1; cakePosition.y = 0.16;
     this.cake = new CakePackage('cake-001', cakePosition); this.scene.add(this.cake.root); this.interaction.register(this.cake);
-    this.scene.add(this.obstacles.root, this.traffic.root, this.npcs.root);
+    this.scene.add(this.obstacles.root, this.traffic.root, this.npcs.root,this.worldEvents.root);
     buildStaticColliders(physicsWorld, this.obstacles.getCollidables());
     physicsWorld.world.updateSceneQueries();
     this.deliveryZone = new DeliveryZone(this.city.landmarks.deliveryDestinationAnchor.position); this.interaction.register(this.deliveryZone);
@@ -126,6 +128,7 @@ export class Game {
   openMap():void{if(this.state!==GameState.PLAYING)return;this.mapOpen=true;this.setState(GameState.PAUSED);}
   closeMap():void{if(!this.mapOpen)return;this.mapOpen=false;if(this.state===GameState.PAUSED)this.setState(GameState.PLAYING);}
   get isMapOpen(){return this.mapOpen;}
+  configureRunIndex(index:number){this.runIndex=Math.max(0,Math.floor(index));}
 
   /** Live-updates the 3D highlight/reaction on stage — does not change game state. */
   selectCharacterOnStage(id: CharacterId): void {
@@ -156,9 +159,10 @@ export class Game {
       this.thirdPersonCamera
       ,this.damageSystem
     );
+    const event=this.worldEvents.selectRun(this.runIndex++);if(event){this.mission.setEventChallenge(event.affectedRoute,event.challengeLabel,event.bonus);}this.events.emit('worldEventChange',event);
     this.setState(GameState.PLAYING);
   }
-  retryMission(): void { if (this.player) this.player.respawnAt(this.city.landmarks.playerSpawnAnchor.position.clone(), this.city.landmarks.playerSpawnAnchor.rotation.y); this.scene.attach(this.cake.root);this.cake.reset(this.city.landmarks.bakeryPickupAnchor.position.clone().setX(this.city.landmarks.bakeryPickupAnchor.position.x+1.1)); this.deliveryZone.reset(); this.traffic.reset(); this.npcs.reset(); this.mission.reset();this.lastCakeCondition=100; this.setState(GameState.PLAYING); }
+  retryMission(): void { if (this.player) this.player.respawnAt(this.city.landmarks.playerSpawnAnchor.position.clone(), this.city.landmarks.playerSpawnAnchor.rotation.y); this.scene.attach(this.cake.root);this.cake.reset(this.city.landmarks.bakeryPickupAnchor.position.clone().setX(this.city.landmarks.bakeryPickupAnchor.position.x+1.1)); this.deliveryZone.reset(); this.traffic.reset(); this.npcs.reset();this.worldEvents.reset(); this.mission.reset();const event=this.worldEvents.metadata;if(event)this.mission.setEventChallenge(event.affectedRoute,event.challengeLabel,event.bonus);this.lastCakeCondition=100; this.setState(GameState.PLAYING); }
 
   private setCameraToCharacterSelect(): void {
     this.camera.position.set(0, 3.6, 41);
@@ -260,6 +264,7 @@ export class Game {
       this.player.render(delta, alpha);
       this.traffic.update(delta, this.player.character.root.position, this.player.getCarriedPackage() as CakePackage|null, this.player.entityId, amount => this.player?.trafficPush(amount));
       this.npcs.update(delta, this.player.character.root.position, this.player.getCarriedPackage());
+      this.worldEvents.update(delta,this.player.character.root.position,this.player.getCarriedPackage() as CakePackage|null);
       const navigationObjective=objectiveTargetForPackage(this.cake.state),navigationTarget=navigationObjective==='PICKUP'?this.cake.interactionPosition:this.city.landmarks.deliveryDestinationAnchor.position;
       this.navigationUpdate?.(delta,this.player.character.root,navigationTarget,currentRoute,navigationObjective);
     }

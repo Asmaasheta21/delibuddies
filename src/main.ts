@@ -34,6 +34,7 @@ async function bootstrap(): Promise<void> {
 
   const game = new Game(canvas, physicsWorld);
   const save = new SaveManager(); const prefs=save.load(); const audio=new AudioManager(); audio.musicEnabled=prefs.musicEnabled; audio.sfxEnabled=prefs.sfxEnabled;
+  const qaRun=location.pathname==='/__qa'?Number(new URLSearchParams(location.search).get('eventRun')):NaN;game.configureRunIndex(Number.isFinite(qaRun)&&qaRun>=0?qaRun:prefs.missionAttempts);
   const discovered=new Set<RouteId>(['main-street','park-route',...prefs.discoveredRoutes.filter((r):r is RouteId=>r==='market-shortcut'||r==='alley')]);
   const navigation=new NavigationSystem(uiRoot,game.getMapData(),discovered,routes=>save.save({discoveredRoutes:routes.filter(r=>r==='market-shortcut'||r==='alley')}),()=>game.openMap(),()=>game.closeMap());
   game.setNavigationUpdater((dt,player,target,route,objective)=>{navigation.update(dt,player,target,objective);navigation.discover(route);});
@@ -57,10 +58,11 @@ async function bootstrap(): Promise<void> {
       document.body.dataset.gameState = to;
     gameplayHud?.classList.toggle('is-hidden', to !== GameState.PLAYING);
     resultScreen?.classList.toggle('is-hidden', to !== GameState.SUCCESS && to !== GameState.FAILED);
-    if (to === GameState.SUCCESS || to === GameState.FAILED) { const result=game.mission.result; uiRoot.querySelector('#result-title')!.textContent=to===GameState.SUCCESS?'DELIVERY COMPLETE!':'DELIVERY FAILED'; uiRoot.querySelector('#result-reason')!.textContent=to===GameState.FAILED?(result?.reason==='TIME'?'YOU RAN OUT OF TIME':'THE CAKE WAS DESTROYED'):`TIME TAKEN ${Math.floor((result?.timeTaken??0)/60).toString().padStart(2,'0')}:${Math.floor((result?.timeTaken??0)%60).toString().padStart(2,'0')} · SCORE ${result?.score??0} · ${result?.stars??0} STARS`; }
+    if (to === GameState.SUCCESS || to === GameState.FAILED) { const result=game.mission.result; uiRoot.querySelector('#result-title')!.textContent=to===GameState.SUCCESS?'DELIVERY COMPLETE!':'DELIVERY FAILED'; uiRoot.querySelector('#result-reason')!.textContent=to===GameState.FAILED?(result?.reason==='TIME'?'YOU RAN OUT OF TIME':'THE CAKE WAS DESTROYED'):`TIME TAKEN ${Math.floor((result?.timeTaken??0)/60).toString().padStart(2,'0')}:${Math.floor((result?.timeTaken??0)%60).toString().padStart(2,'0')} · SCORE ${result?.score??0} · ${result?.stars??0} STARS`;const tips=uiRoot.querySelector<HTMLElement>('#result-tip-summary')!;tips.innerHTML=result?.tipBreakdown?.length?`${result.tipBreakdown.map(line=>`<div><span>${line.label}</span><span>+${line.amount}</span></div>`).join('')}<div><b>TOTAL TIP</b><b>+${result.tipBreakdown.reduce((sum,line)=>sum+line.amount,0)}</b></div>`:'';tips.classList.toggle('is-hidden',!result?.tipBreakdown?.length); }
     uiRoot.querySelector('#interaction-prompt')?.classList.add('is-hidden');
     pauseScreen?.classList.toggle('is-hidden', to !== GameState.PAUSED || game.isMapOpen);
   });
+  let updateTimer=0;game.events.on('worldEventChange',event=>{navigation.setWorldEvent(event);save.save({missionAttempts:prefs.missionAttempts+1});const card=uiRoot.querySelector<HTMLElement>('#city-update')!;window.clearTimeout(updateTimer);if(!event){card.classList.add('is-hidden');return;}uiRoot.querySelector('#city-update-title')!.textContent=`${event.icon} ${event.name}`;uiRoot.querySelector('#city-update-copy')!.textContent=event.description;card.classList.remove('is-hidden');updateTimer=window.setTimeout(()=>card.classList.add('is-hidden'),2800);});
   document.body.dataset.gameState = game.getState();
 
   game.start();

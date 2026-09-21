@@ -1,0 +1,1 @@
+import { build } from 'esbuild';import { rm } from 'node:fs/promises';await build({entryPoints:['tests/events.ts'],outfile:'.qa/events.mjs',bundle:true,platform:'node',format:'esm',packages:'external'});try{await import('../.qa/events.mjs');}finally{await rm('.qa/events.mjs',{force:true});}

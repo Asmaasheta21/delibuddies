@@ -1,8 +1,10 @@
 import type { DistrictMapData } from './MapTypes';
 import { worldToMap } from './WorldMapProjection';
 import type { RouteId } from '../routes/RouteTypes';
+import type { WorldEventMapMetadata } from '../events/WorldEventTypes';
 export class MapScreen {
  private selected:RouteId='main-street'; private readonly player:HTMLElement;private readonly target:HTMLElement;private readonly detail:HTMLElement;
+ private activeEvent:WorldEventMapMetadata|null=null;
  constructor(private readonly root:HTMLElement,private readonly data:DistrictMapData,private readonly discovered:Set<RouteId>,onClose:()=>void){
   const canvas=root.querySelector<HTMLElement>('.delivery-map')!;this.player=root.querySelector<HTMLElement>('#map-player')!;this.target=root.querySelector<HTMLElement>('#map-target')!;this.detail=root.querySelector<HTMLElement>('#route-detail')!;
   for(const l of data.landmarks){const p=worldToMap(l.position.x,l.position.z,data.bounds),e=document.createElement('div');e.className=`map-landmark map-${l.kind}`;e.style.left=`${p.x}%`;e.style.top=`${p.y}%`;e.innerHTML=`<span>${this.icon(l.kind)}</span><small>${l.label}</small>`;canvas.append(e);}
@@ -12,8 +14,9 @@ export class MapScreen {
  private isHidden(id:RouteId){return(id==='market-shortcut'||id==='alley')&&!this.discovered.has(id);}
  private icon(k:string){return k==='bakery'?'🎂':k==='market'?'☂':k==='park'?'🌳':k==='destination'?'📦':k==='cafe'?'☕':k==='shop'?'🏪':k==='alley'?'↯':'•';}
  private routeTag(id:RouteId,reward:number){if(id==='main-street')return'SAFE · LONG';if(id==='park-route')return'BALANCED · MEDIUM';return`${id==='alley'?'HIGH RISK · FASTEST':'CROWDED · SHORT'} · +${reward}`;}
- private select(id:RouteId){this.selected=id;this.root.querySelectorAll('.map-route').forEach(e=>e.classList.toggle('is-selected',(e as HTMLElement).dataset.route===id));const r=this.data.routes.find(x=>x.id===id)!;this.detail.textContent=this.isHidden(id)?'A shortcut is rumored here. Explore the district to reveal it.':`${r.label} · ${r.risk.toUpperCase()} RISK · ${r.identity}${r.reward?` · +${r.reward} TIP`:''}`;}
+ private select(id:RouteId){this.selected=id;this.root.querySelectorAll('.map-route').forEach(e=>e.classList.toggle('is-selected',(e as HTMLElement).dataset.route===id));const r=this.data.routes.find(x=>x.id===id)!,event=this.activeEvent?.affectedRoute===id?` · ${this.activeEvent.icon} ${this.activeEvent.mapLabel} · ${this.activeEvent.routeStatus}`:'';this.detail.textContent=this.isHidden(id)?'A shortcut is rumored here. Explore the district to reveal it.':`${r.label} · ${r.risk.toUpperCase()} RISK · ${r.identity}${event}${r.reward?` · +${r.reward} TIP`:''}`;}
  discover(id:RouteId){if(this.discovered.has(id))return;this.discovered.add(id);const button=this.root.querySelector<HTMLElement>(`[data-route="${id}"]`),route=this.data.routes.find(r=>r.id===id);if(button&&route){button.classList.remove('is-rumored');button.innerHTML=`<b>${route.label}</b><small>${this.routeTag(route.id,route.reward)}</small>`;}if(this.selected===id)this.select(id);}
+ setWorldEvent(event:WorldEventMapMetadata|null){this.activeEvent=event;this.root.querySelectorAll('.event-badge').forEach(e=>e.remove());if(event){const button=this.root.querySelector<HTMLElement>(`[data-route="${event.affectedRoute}"]`);if(button){const badge=document.createElement('em');badge.className='event-badge';badge.textContent=`${event.icon} ${event.mapLabel}`;button.append(badge);}}this.select(this.selected);}
  show(){this.root.classList.remove('is-hidden');} hide(){this.root.classList.add('is-hidden');}
  update(px:number,pz:number,tx:number,tz:number,label:'PICK UP HERE'|'DELIVER HERE'){const p=worldToMap(px,pz,this.data.bounds),t=worldToMap(tx,tz,this.data.bounds);this.player.style.left=`${p.x}%`;this.player.style.top=`${p.y}%`;this.target.style.left=`${t.x}%`;this.target.style.top=`${t.y}%`;this.target.querySelector('small')!.textContent=label;}
 }

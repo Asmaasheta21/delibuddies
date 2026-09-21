@@ -15,6 +15,7 @@ export interface StateChangePayload {
 
 export type GameEvents = {
   stateChange: StateChangePayload;
+  worldEventChange: import('../events/WorldEventTypes').WorldEventMapMetadata|null;
 };
 
 /**
