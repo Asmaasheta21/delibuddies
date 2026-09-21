@@ -22,6 +22,8 @@ import {
   type PaletteKey
 } from './Materials';
 import { WorldObjectCategory, type CollidablePlacement, type WorldLandmarks } from './WorldTypes';
+import type { DistrictMapData, MapLandmark } from '../navigation/MapTypes';
+import { DELIVERY_ROUTES } from '../routes/RouteTypes';
 
 export { WorldObjectCategory, type CollidablePlacement, type WorldLandmarks } from './WorldTypes';
 
@@ -104,6 +106,8 @@ export class City {
   getGroundPlacements(): readonly CollidablePlacement[] {
     return this.groundPlacements;
   }
+
+  getMapData():DistrictMapData {const point=(id:string,label:string,kind:MapLandmark['kind'],x:number,z:number):MapLandmark=>({id,label,kind,position:new THREE.Vector3(x,0,z)});return{id:'sweetcrumb-district',name:'Sweetcrumb District',bounds:{minX:-34,maxX:30,minZ:-40,maxZ:36},routes:DELIVERY_ROUTES,landmarks:[point('bakery','Bakery','bakery',this.landmarks.bakeryPickupAnchor.position.x,this.landmarks.bakeryPickupAnchor.position.z),point('market','Market','market',(LAYOUT.market.x0+LAYOUT.market.x1)/2,(LAYOUT.market.z0+LAYOUT.market.z1)/2),point('park','Park','park',(LAYOUT.park.x0+LAYOUT.park.x1)/2,(LAYOUT.park.z0+LAYOUT.park.z1)/2),point('main','Main Street','street',0,10),point('alley','Alley','alley',(LAYOUT.alley.x0+LAYOUT.alley.x1)/2,0),point('destination','Destination','destination',this.landmarks.deliveryDestinationAnchor.position.x,this.landmarks.deliveryDestinationAnchor.position.z),point('cafe','Cafe','cafe',6,28),point('grocery','Grocery','shop',-8,10),point('delivery-shop','Delivery Shop','shop',8,10)]};}
 
   update(delta: number): void {
     for (const animate of this.animators) animate(delta);

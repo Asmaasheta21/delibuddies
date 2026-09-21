@@ -52,7 +52,9 @@
       <div id="gameplay-hud" class="is-hidden">
         <div id="mission-objective" class="mission-objective">DELIVERY 01<br>PICK UP THE CAKE</div>
         <div id="mission-timer" class="mission-timer">TIME 04:00</div>
+        <div id="destination-compass" class="destination-compass" aria-label="Delivery direction"><span id="compass-arrow">➤</span><small id="compass-distance">FAR</small></div>
         <button id="pause-button" class="btn pause-button" type="button">PAUSE</button>
+        <button id="map-button" class="btn map-button" type="button" aria-label="Open delivery map">MAP</button>
         <div id="cake-condition" class="cake-condition is-hidden">CAKE 100%</div>
         <div id="interaction-prompt" class="interaction-prompt is-hidden">[E] PICK UP</div>
         <div id="mobile-joystick-base" class="mobile-control mobile-joystick-base">
@@ -70,6 +72,7 @@
         </div>
       </div>
       <div id="settings-screen" class="overlay-screen is-hidden"><div class="menu-card"><h1 class="select-title">SETTINGS</h1><label><input id="music-toggle" type="checkbox" checked> MUSIC</label><label><input id="sfx-toggle" type="checkbox" checked> SFX</label><button id="settings-back" class="btn btn-primary" type="button">BACK</button></div></div>
+      <div id="map-screen" class="overlay-screen map-screen is-hidden" role="dialog" aria-label="Sweetcrumb delivery map"><section class="map-card"><header><div><small>DELIVERY GUIDE</small><h2>Sweetcrumb District</h2></div><button id="map-close" class="btn" type="button">CLOSE</button></header><div class="delivery-map"><div class="map-road road-main"></div><div class="map-road road-cross"></div><div id="map-player" class="map-player"><span>➤</span><small>YOU ARE HERE</small></div><div id="map-target" class="map-target"><span>📦</span><small>DELIVER HERE</small></div></div><p id="route-detail" class="route-detail"></p><footer>Tap a route to compare it. You can change your mind anytime.</footer></section></div>
     </div>
 
     <script type="module" src="/src/main.ts"></script>

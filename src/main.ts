@@ -6,6 +6,8 @@ import { PhysicsWorld } from './physics/PhysicsWorld';
 import { MobileControls } from './input/MobileControls';
 import { SaveManager } from './save/SaveManager';
 import { AudioManager } from './audio/AudioManager';
+import { NavigationSystem } from './navigation/NavigationSystem';
+import type { RouteId } from './routes/RouteTypes';
 
 const MIN_BOOT_DELAY_MS = 500;
 
@@ -32,6 +34,9 @@ async function bootstrap(): Promise<void> {
 
   const game = new Game(canvas, physicsWorld);
   const save = new SaveManager(); const prefs=save.load(); const audio=new AudioManager(); audio.musicEnabled=prefs.musicEnabled; audio.sfxEnabled=prefs.sfxEnabled;
+  const discovered=new Set<RouteId>(['main-street','park-route',...prefs.discoveredRoutes.filter((r):r is RouteId=>r==='market-shortcut'||r==='alley')]);
+  const navigation=new NavigationSystem(uiRoot,game.getMapData(),discovered,routes=>save.save({discoveredRoutes:routes.filter(r=>r==='market-shortcut'||r==='alley')}),()=>game.openMap(),()=>game.closeMap());
+  game.setNavigationUpdater((dt,player,target,route,objective)=>{navigation.update(dt,player,target,objective);navigation.discover(route);});
   document.addEventListener('pointerdown',()=>audio.unlock(),{once:true}); document.addEventListener('keydown',()=>audio.unlock(),{once:true});
   new UIManager({ game, uiRoot });
   const mobileControls = new MobileControls(game.getInputManager(), uiRoot);
@@ -54,7 +59,7 @@ async function bootstrap(): Promise<void> {
     resultScreen?.classList.toggle('is-hidden', to !== GameState.SUCCESS && to !== GameState.FAILED);
     if (to === GameState.SUCCESS || to === GameState.FAILED) { const result=game.mission.result; uiRoot.querySelector('#result-title')!.textContent=to===GameState.SUCCESS?'DELIVERY COMPLETE!':'DELIVERY FAILED'; uiRoot.querySelector('#result-reason')!.textContent=to===GameState.FAILED?(result?.reason==='TIME'?'YOU RAN OUT OF TIME':'THE CAKE WAS DESTROYED'):`TIME TAKEN ${Math.floor((result?.timeTaken??0)/60).toString().padStart(2,'0')}:${Math.floor((result?.timeTaken??0)%60).toString().padStart(2,'0')} · SCORE ${result?.score??0} · ${result?.stars??0} STARS`; }
     uiRoot.querySelector('#interaction-prompt')?.classList.add('is-hidden');
-    pauseScreen?.classList.toggle('is-hidden', to !== GameState.PAUSED);
+    pauseScreen?.classList.toggle('is-hidden', to !== GameState.PAUSED || game.isMapOpen);
   });
   document.body.dataset.gameState = game.getState();
 

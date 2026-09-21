@@ -19,6 +19,8 @@ import { NPCSystem } from '../npc/NPCSystem';
 import { DeliveryZone } from '../delivery/DeliveryZone';
 import { CakeDeliveryMission } from '../missions/CakeDeliveryMission';
 import { routeAt } from '../routes/RouteTypes';
+import type { RouteId } from '../routes/RouteTypes';
+import { objectiveTargetForPackage } from '../navigation/ObjectiveTarget';
 
 const BASE_FOV_DEGREES = 50;
 
@@ -57,6 +59,8 @@ export class Game {
   private readonly deliveryZone: DeliveryZone;
   readonly mission = new CakeDeliveryMission();
   private lastCakeCondition=100;
+  private mapOpen=false;
+  private navigationUpdate:((dt:number,player:THREE.Object3D,target:THREE.Vector3,route:RouteId|'unknown',objective:'PICKUP'|'DESTINATION')=>void)|null=null;
 
   constructor(canvas: HTMLCanvasElement, physicsWorld: PhysicsWorld) {
     this.canvas = canvas;
@@ -117,6 +121,11 @@ export class Game {
   getPlayer(): Player | null {
     return this.player;
   }
+  setNavigationUpdater(update:(dt:number,player:THREE.Object3D,target:THREE.Vector3,route:RouteId|'unknown',objective:'PICKUP'|'DESTINATION')=>void){this.navigationUpdate=update;}
+  getMapData(){return this.city.getMapData();}
+  openMap():void{if(this.state!==GameState.PLAYING)return;this.mapOpen=true;this.setState(GameState.PAUSED);}
+  closeMap():void{if(!this.mapOpen)return;this.mapOpen=false;if(this.state===GameState.PAUSED)this.setState(GameState.PLAYING);}
+  get isMapOpen(){return this.mapOpen;}
 
   /** Live-updates the 3D highlight/reaction on stage — does not change game state. */
   selectCharacterOnStage(id: CharacterId): void {
@@ -213,7 +222,8 @@ export class Game {
     // while paused.
     const snapshot = this.inputManager.consume();
     if (snapshot.pausePressed) {
-      if (this.state === GameState.PLAYING) this.setState(GameState.PAUSED);
+      if(this.mapOpen)this.closeMap();
+      else if (this.state === GameState.PLAYING) this.setState(GameState.PAUSED);
       else if (this.state === GameState.PAUSED) this.setState(GameState.PLAYING);
     }
 
@@ -222,7 +232,7 @@ export class Game {
 
     if (this.state === GameState.PLAYING && this.player) {
       this.mission.tick(delta);
-      this.mission.visitRoute(routeAt(this.player.character.root.position));
+      const currentRoute=routeAt(this.player.character.root.position);this.mission.visitRoute(currentRoute);
       this.deliveryZone.update(this.player.character.root.position, this.cake);
       const target = this.interaction.update(this.player.character.root.position, this.player.entityId, snapshot);
       if (target === this.cake && snapshot.interactPressed) this.player.tryAttach(this.cake);
@@ -250,6 +260,8 @@ export class Game {
       this.player.render(delta, alpha);
       this.traffic.update(delta, this.player.character.root.position, this.player.getCarriedPackage() as CakePackage|null, this.player.entityId, amount => this.player?.trafficPush(amount));
       this.npcs.update(delta, this.player.character.root.position, this.player.getCarriedPackage());
+      const navigationObjective=objectiveTargetForPackage(this.cake.state),navigationTarget=navigationObjective==='PICKUP'?this.cake.interactionPosition:this.city.landmarks.deliveryDestinationAnchor.position;
+      this.navigationUpdate?.(delta,this.player.character.root,navigationTarget,currentRoute,navigationObjective);
     }
 
     this.renderer.render(this.scene, this.camera);

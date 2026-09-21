@@ -12,6 +12,7 @@
     ,"test:stage6": "node tests/run-stage6.mjs"
     ,"test:stage7": "node tests/run-stage7.mjs"
     ,"test:stage8": "node tests/run-stage8.mjs"
+    ,"test:navigation": "node tests/run-navigation.mjs"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.14.0",
