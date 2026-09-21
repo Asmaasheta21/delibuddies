@@ -18,6 +18,7 @@ import { TrafficSystem } from '../traffic/TrafficSystem';
 import { NPCSystem } from '../npc/NPCSystem';
 import { DeliveryZone } from '../delivery/DeliveryZone';
 import { CakeDeliveryMission } from '../missions/CakeDeliveryMission';
+import { routeAt } from '../routes/RouteTypes';
 
 const BASE_FOV_DEGREES = 50;
 
@@ -55,6 +56,7 @@ export class Game {
   private readonly npcs = new NPCSystem();
   private readonly deliveryZone: DeliveryZone;
   readonly mission = new CakeDeliveryMission();
+  private lastCakeCondition=100;
 
   constructor(canvas: HTMLCanvasElement, physicsWorld: PhysicsWorld) {
     this.canvas = canvas;
@@ -147,7 +149,7 @@ export class Game {
     );
     this.setState(GameState.PLAYING);
   }
-  retryMission(): void { if (this.player) this.player.respawnAt(this.city.landmarks.playerSpawnAnchor.position.clone(), this.city.landmarks.playerSpawnAnchor.rotation.y); this.cake.reset(this.city.landmarks.bakeryPickupAnchor.position.clone().setX(this.city.landmarks.bakeryPickupAnchor.position.x+1.1)); this.deliveryZone.reset(); this.traffic.reset(); this.npcs.reset(); this.mission.reset(); this.setState(GameState.PLAYING); }
+  retryMission(): void { if (this.player) this.player.respawnAt(this.city.landmarks.playerSpawnAnchor.position.clone(), this.city.landmarks.playerSpawnAnchor.rotation.y); this.scene.attach(this.cake.root);this.cake.reset(this.city.landmarks.bakeryPickupAnchor.position.clone().setX(this.city.landmarks.bakeryPickupAnchor.position.x+1.1)); this.deliveryZone.reset(); this.traffic.reset(); this.npcs.reset(); this.mission.reset();this.lastCakeCondition=100; this.setState(GameState.PLAYING); }
 
   private setCameraToCharacterSelect(): void {
     this.camera.position.set(0, 3.6, 41);
@@ -220,11 +222,13 @@ export class Game {
 
     if (this.state === GameState.PLAYING && this.player) {
       this.mission.tick(delta);
+      this.mission.visitRoute(routeAt(this.player.character.root.position));
       this.deliveryZone.update(this.player.character.root.position, this.cake);
       const target = this.interaction.update(this.player.character.root.position, this.player.entityId, snapshot);
       if (target === this.cake && snapshot.interactPressed) this.player.tryAttach(this.cake);
       if (target === this.deliveryZone && snapshot.interactPressed) this.deliveryZone.interact();
       if (this.cake.destroyed) this.mission.fail('CAKE');
+      if(this.cake.condition<this.lastCakeCondition){this.mission.recordDamage();this.lastCakeCondition=this.cake.condition;}
       if (this.deliveryZone.deliveryPrepared && this.cake.state === 'CARRIED') { this.mission.complete(this.cake.condition); }
       if (this.mission.status === 'SUCCESS' && this.state === GameState.PLAYING) this.setState(GameState.SUCCESS);
       else if (this.mission.status === 'FAILED' && this.state === GameState.PLAYING) this.setState(GameState.FAILED);

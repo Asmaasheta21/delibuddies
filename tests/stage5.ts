@@ -14,4 +14,5 @@ assert.equal(cake.damage(200),100); assert.equal(cake.condition,0); assert.equal
 assert.equal(impactSeverity(.5),null); assert.equal(impactSeverity(2),'soft'); assert.equal(impactSeverity(3),'normal'); assert.equal(impactSeverity(5),'hard'); assert.equal(severityDamage('major'),15);
 const reset = new CakePackage('reset',new THREE.Vector3()); reset.damage(20); reset.reset(new THREE.Vector3(2,0,3)); assert.equal(reset.condition,100); assert.equal(reset.state,'WORLD');
 const damaged = new CakePackage('cooldown',new THREE.Vector3()); const damage = new PackageDamageSystem(); assert.equal(damage.applyCollision(damaged,3),5); assert.equal(damage.applyCollision(damaged,3),0);
+const visual = new CakePackage('visual',new THREE.Vector3()); assert.equal(visual.visualState,'PERFECT'); visual.damage(35);assert.equal(visual.visualState,'TILTED_FROSTING');visual.damage(25);assert.equal(visual.visualState,'LOST_CANDLE');visual.damage(25);assert.equal(visual.visualState,'CROOKED');visual.damage(10);assert.equal(visual.visualState,'DISASTER');
 console.log('PASS Stage 5 deterministic interaction/damage tests');
